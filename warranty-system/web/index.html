@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WarrantyHub - Product Warranty Management</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="brand"><span class="logo">W</span><div><b>WarrantyHub</b><small>Electronics Shop</small></div></div>
+
+  <div class="role-switch" title="Switch between the two portals">
+    <button id="roleShop" class="on" onclick="setRole('shop')">Shop Owner</button>
+    <button id="roleCust" onclick="setRole('customer')">Customer</button>
+  </div>
+
+  <nav id="nav">
+    <a data-page="dashboard" data-role="shop">Dashboard</a>
+    <a data-page="products" data-role="shop">Products</a>
+    <a data-page="customers" data-role="shop">Customers</a>
+    <a data-page="register" data-role="shop">Register Warranty</a>
+    <a data-page="warranties" data-role="shop">All Warranties</a>
+    <a data-page="claims" data-role="both">Check &amp; Claims</a>
+  </nav>
+
+  <div class="side-foot">
+    <div class="live"><span class="dot"></span> LIVE &middot; auto-refresh</div>
+    <button class="ghost" onclick="loadDemo()">Load demo data</button>
+  </div>
+</aside>
+
+<main>
+  <header class="topbar"><h1 id="pageTitle">Dashboard</h1><div id="clock"></div></header>
+
+  <!-- DASHBOARD -->
+  <section id="page-dashboard" class="page">
+    <div class="stats" id="statCards"></div>
+    <div class="grid2">
+      <div class="card"><h3>Expiring within 30 days</h3><div id="soonList" class="list"></div></div>
+      <div class="card"><h3>Latest claims</h3><div id="recentClaims" class="list"></div></div>
+    </div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section id="page-products" class="page">
+    <div class="card">
+      <h3>Add product</h3>
+      <div class="form-row">
+        <input id="pName" placeholder="Product name (e.g. Galaxy S24)">
+        <input id="pBrand" placeholder="Brand">
+        <input id="pCat" placeholder="Category">
+        <input id="pMonths" type="number" min="1" value="12" title="Default warranty (months)">
+        <button onclick="addProduct()">Add</button>
+      </div>
+    </div>
+    <div class="card"><table><thead><tr><th>Product</th><th>Brand</th><th>Category</th><th>Default warranty</th><th></th></tr></thead><tbody id="productRows"></tbody></table></div>
+  </section>
+
+  <!-- CUSTOMERS -->
+  <section id="page-customers" class="page">
+    <div class="card">
+      <h3>Add customer</h3>
+      <div class="form-row">
+        <input id="cName" placeholder="Customer name">
+        <input id="cPhone" placeholder="Phone">
+        <input id="cEmail" placeholder="Email (optional)">
+        <button onclick="addCustomer()">Add</button>
+      </div>
+    </div>
+    <div class="card"><table><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th></th></tr></thead><tbody id="customerRows"></tbody></table></div>
+  </section>
+
+  <!-- REGISTER -->
+  <section id="page-register" class="page">
+    <div class="grid2">
+      <div class="card">
+        <h3>Register a purchase</h3>
+        <label>Product</label><select id="rProduct" onchange="onProductPick()"></select>
+        <label>Customer</label><select id="rCustomer"></select>
+        <label>Serial number</label><input id="rSerial" placeholder="e.g. SN-TV-9001">
+        <div class="form-row two">
+          <div><label>Purchase date</label><input id="rDate" type="date" oninput="previewReg()"></div>
+          <div><label>Warranty (months)</label><input id="rMonths" type="number" min="1" value="12" oninput="previewReg()"></div>
+        </div>
+        <button class="wide" onclick="addRegistration()">Register warranty</button>
+      </div>
+      <div class="card"><h3>Live preview</h3><div id="regPreview" class="muted">Pick a purchase date to preview the warranty.</div></div>
+    </div>
+  </section>
+
+  <!-- ALL WARRANTIES -->
+  <section id="page-warranties" class="page">
+    <div class="card toolbar">
+      <input id="wSearch" class="search" placeholder="Search by product, serial number or customer..." oninput="loadWarranties()">
+      <div class="chips" id="wChips">
+        <button class="chip on" data-v="" onclick="setWFilter(this)">All</button>
+        <button class="chip" data-v="Active" onclick="setWFilter(this)">Active</button>
+        <button class="chip" data-v="Expired" onclick="setWFilter(this)">Expired</button>
+      </div>
+    </div>
+    <div id="warrantyCards" class="cards"></div>
+  </section>
+
+  <!-- CLAIMS -->
+  <section id="page-claims" class="page">
+    <div class="grid2">
+      <div class="card">
+        <h3>1. Check your warranty</h3>
+        <input id="kSerial" class="big" placeholder="Enter serial number (try SN-S24-1001)" oninput="liveCheck()">
+        <div id="checkResult" class="muted">Type a serial number. The status appears instantly.</div>
+      </div>
+      <div class="card">
+        <h3>2. Submit a claim</h3>
+        <textarea id="kIssue" rows="4" placeholder="Describe the issue..."></textarea>
+        <button id="kSubmit" class="wide" onclick="submitClaim()" disabled>Submit claim</button>
+        <div id="claimMsg"></div>
+      </div>
+    </div>
+
+    <div class="card toolbar">
+      <input id="kSearch" class="search" placeholder="Search claims by product, serial, customer or issue..." oninput="loadClaims()">
+      <div class="chips" id="kChips">
+        <button class="chip on" data-v="" onclick="setKFilter(this)">All</button>
+        <button class="chip" data-v="Pending" onclick="setKFilter(this)">Pending</button>
+        <button class="chip" data-v="Approved" onclick="setKFilter(this)">Approved</button>
+        <button class="chip" data-v="Rejected" onclick="setKFilter(this)">Rejected</button>
+      </div>
+    </div>
+    <div id="claimCards" class="cards"></div>
+  </section>
+</main>
+
+<div id="toast"></div>
+
+<!-- printable certificate -->
+<div id="certificate"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
